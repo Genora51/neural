@@ -2,16 +2,10 @@
 import numpy as np
 
 
-# FIXME: sigmoid is slightly broken, probably bias' fault
 # Activation functions
 def sigmoid(x):
-    return np.reciprocal(1 + np.exp(-x))
-
-
-def _sigmoid_p(x):
-    # s = sigmoid(x)
-    return np.multiply(x, (1 - x))
-sigmoid.derivative = _sigmoid_p
+    return 1 / (1 + np.exp(-x))
+sigmoid.derivative = lambda x: np.multiply(x, (1 - x))
 
 
 def tanh(x):

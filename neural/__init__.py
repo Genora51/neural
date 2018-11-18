@@ -10,6 +10,8 @@ class NeuralNetwork(object):
     """A Feed-forward Neural Network"""
 
     def __init__(self, sizes, activations, cost=costs.quad_cost):
+        if not hasattr(activations, '__iter__'):
+            activations = [activations] * (len(sizes) - 1)
         self.activations = activations
         self.cost = cost
         self.weights = []
@@ -46,22 +48,24 @@ class NeuralNetwork(object):
             for ins, outs in zip(i_batches, o_batches):
                 # Run NN (feed-forward step)
                 layer_outputs = [ins]
+                layer_inputs = []
                 for l in range(self.layer_count):
                     dot_val = layer_outputs[l] @ self.weights[l]
                     activated = self.activations[l](dot_val)
+                    layer_inputs.append(dot_val)
                     layer_outputs.append(activated)
                 # Differentiate error with respect to output neurons
                 error_deriv = self.cost.derivative(layer_outputs[-1], outs)
                 # Differentiate neuron output with respect to neuron input
                 deriv_out_net = self.activations[-1].derivative(
-                    layer_outputs[-1]
+                    layer_inputs[-1], layer_outputs[-1]
                 )
                 # Chain rule: error with respect to neuron input
                 deltas = [error_deriv * deriv_out_net]
                 for l in range(len(layer_outputs) - 2, 0, -1):
                     # More complicated for hidden layer (backprop step)
                     deriv_out_net = self.activations[l].derivative(
-                        layer_outputs[l]
+                        layer_inputs[l - 1], layer_outputs[l]
                     )
                     deriv_err_out = deltas[-1] @ self.weights[l].T
                     # Chain rule

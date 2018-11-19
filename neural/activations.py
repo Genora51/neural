@@ -42,3 +42,28 @@ sinusoid.derivative = lambda x, y: np.cos(x)
 def softplus(x):
     return np.log(1 + np.exp(x))
 softplus.derivative = lambda x, y: 1 / (1 + np.exp(-x))
+
+
+def elu(x):
+    return np.where(x < 0, np.exp(x) - 1, x)
+elu.derivative = lambda x, y: np.where(x < 0, y + 1, 1)
+
+
+def leaky_relu(x):
+    return np.where(x > 0, x, 0.01 * x)
+leaky_relu.derivative = lambda x, y: np.where(x > 0, 1, 0.01)
+
+
+def relu(x):
+    return x * (x > 0)
+relu.derivative = lambda x, y: 1 * (x > 0)
+
+
+def sinc(x):
+    return np.where(x == 0, 1, np.sin(x) / x)
+sinc.derivative = lambda x, y: np.where(x == 0, 0, (np.cos(x) - y) / x)
+
+
+def softsign(x):
+    return x / (1 + np.abs(x))
+softsign.derivative = lambda x, y: x / np.square(1 + np.abs(x))

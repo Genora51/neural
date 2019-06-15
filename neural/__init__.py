@@ -61,7 +61,7 @@ class NeuralNetwork(object):
                     layer_inputs[-1], layer_outputs[-1]
                 )
                 # Chain rule: error with respect to neuron input
-                deltas = [error_deriv * deriv_out_net]
+                deltas = [np.einsum('ij,ijk->ik', error_deriv, deriv_out_net)]
                 for l in range(len(layer_outputs) - 2, 0, -1):
                     # More complicated for hidden layer (backprop step)
                     deriv_out_net = self.activations[l].derivative(
@@ -69,7 +69,10 @@ class NeuralNetwork(object):
                     )
                     deriv_err_out = deltas[-1] @ self.weights[l].T
                     # Chain rule
-                    delta = deriv_err_out * deriv_out_net
+                    delta = np.einsum(
+                        'ij,ijk->ik',
+                        deriv_err_out, deriv_out_net
+                    )
                     deltas.append(delta)
                 # Reverse to correct layer order
                 deltas.reverse()

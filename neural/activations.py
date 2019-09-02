@@ -97,5 +97,5 @@ def _deriv_softmax(x, y):
 
 @Activation(derivative=_deriv_softmax, onehot=False)
 def softmax(x):
-    e_x = np.exp(x)
+    e_x = np.exp(x - np.max(x))
     return e_x / np.sum(e_x, axis=-1)[:, None]

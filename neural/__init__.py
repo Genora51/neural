@@ -9,16 +9,20 @@ __all__ = ["NeuralNetwork", "activations", "costs"]
 class NeuralNetwork(object):
     """A Feed-forward Neural Network"""
 
-    def __init__(self, sizes, activations, cost=costs.quad_cost):
+    def __init__(self, sizes, activations, cost=costs.quad_cost, stddev=1.0):
         if not hasattr(activations, '__iter__'):
             activations = [activations] * (len(sizes) - 1)
         self.activations = activations
         self.cost = cost
         self.weights = []
         for i in range(1, len(sizes) - 1):
-            r = 2 * np.random.random((sizes[i - 1] + 1, sizes[i] + 1)) - 1
+            r = 2 * np.random.normal(
+                size=(sizes[i - 1] + 1, sizes[i] + 1), scale=stddev
+            ) - 1
             self.weights.append(r)
-        r = 2 * np.random.random((sizes[-2] + 1, sizes[-1])) - 1
+        r = 2 * np.random.normal(
+            size=(sizes[-2] + 1, sizes[-1]), scale=stddev
+        ) - 1
         self.weights.append(r)
         self.layer_count = len(self.weights)
 

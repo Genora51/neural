@@ -22,7 +22,11 @@ class NeuralNetwork(object):
         self.weights.append(r)
         self.layer_count = len(self.weights)
 
-    def train(self, x, y, alpha=0.2, epochs=100, batch_size=1, momentum=0):
+    def train(
+        self, x, y, alpha=0.2, epochs=100,
+        batch_size=1, momentum=0, use_softcross=False,
+        after_epoch=None
+    ):
         """Train the network on a set of input/output values."""
         # TODO: make biases work properly
         # Reshape target data
@@ -54,14 +58,20 @@ class NeuralNetwork(object):
                     activated = self.activations[l](dot_val)
                     layer_inputs.append(dot_val)
                     layer_outputs.append(activated)
-                # Differentiate error with respect to output neurons
-                error_deriv = self.cost.derivative(layer_outputs[-1], outs)
-                # Differentiate neuron output with respect to neuron input
-                deriv_out_net = self.activations[-1].derivative(
-                    layer_inputs[-1], layer_outputs[-1]
-                )
-                # Chain rule: error with respect to neuron input
-                deltas = [np.einsum('ij,ijk->ik', error_deriv, deriv_out_net)]
+                if (use_softcross):
+                    # Softmax cross-entropy shortcut
+                    deltas = [layer_outputs[-1] - outs]
+                else:
+                    # Differentiate error with respect to output neurons
+                    error_deriv = self.cost.derivative(layer_outputs[-1], outs)
+                    # Differentiate neuron output with respect to neuron input
+                    deriv_out_net = self.activations[-1].derivative(
+                        layer_inputs[-1], layer_outputs[-1]
+                    )
+                    # Chain rule: error with respect to neuron input
+                    deltas = [
+                        np.einsum('ij,ijk->ik', error_deriv, deriv_out_net)
+                    ]
                 for l in range(len(layer_outputs) - 2, 0, -1):
                     # More complicated for hidden layer (backprop step)
                     deriv_out_net = self.activations[l].derivative(
@@ -86,6 +96,8 @@ class NeuralNetwork(object):
                     self.weights[i] -= alpha * dotted
                     # Store previous changes for momentum adjustment
                     prev_adj[i] = dotted * momentum
+            if after_epoch is not None:
+                after_epoch(k)
 
     def __call__(self, x):
         """Run the network without training it."""
